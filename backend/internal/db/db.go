@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/garvitgupta/footprint/backend/internal/migrations"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -25,6 +26,7 @@ func Migrate(ctx context.Context, pool *pgxpool.Pool) error {
 	if err != nil {
 		return err
 	}
+	sort.Slice(entries, func(i, j int) bool { return entries[i].Name() < entries[j].Name() })
 	for _, e := range entries {
 		if e.IsDir() {
 			continue

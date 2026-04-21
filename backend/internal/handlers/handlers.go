@@ -57,6 +57,8 @@ func (a *API) Routes(r chi.Router) {
 			r.Patch("/investments/{id}", a.update)
 			r.Delete("/investments/{id}", a.del)
 			r.Get("/investments/{id}/history", a.history)
+			r.Get("/investments/{id}/flows", a.listFlows)
+			r.Post("/investments/{id}/flows", a.createFlow)
 			r.Get("/summary", a.summary)
 
 			r.Post("/blogs", a.createBlog)
@@ -250,4 +252,64 @@ func (a *API) summary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, sum)
+}
+
+type createFlowReq struct {
+	Kind       string  `json:"kind"` // contribution | withdrawal
+	Amount     float64 `json:"amount"`
+	OccurredOn *string `json:"occurred_on"` // YYYY-MM-DD
+	Notes      *string `json:"notes"`
+}
+
+func (a *API) listFlows(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	items, err := a.Store.ListFlows(r.Context(), id)
+	if errors.Is(err, store.ErrNotFound) {
+		writeErr(w, 404, "not found")
+		return
+	}
+	if err != nil {
+		writeErr(w, 500, err.Error())
+		return
+	}
+	writeJSON(w, 200, items)
+}
+
+func (a *API) createFlow(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var req createFlowReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeErr(w, 400, "invalid json")
+		return
+	}
+	if req.Kind != "contribution" && req.Kind != "withdrawal" {
+		writeErr(w, 400, "kind must be contribution or withdrawal")
+		return
+	}
+	if req.Amount <= 0 {
+		writeErr(w, 400, "amount must be > 0")
+		return
+	}
+	od, err := parseDate(req.OccurredOn)
+	if err != nil {
+		writeErr(w, 400, "invalid occurred_on (YYYY-MM-DD)")
+		return
+	}
+
+	f, err := a.Store.CreateFlow(r.Context(), store.CreateFlowInput{
+		InvestmentID: id,
+		Kind:         req.Kind,
+		Amount:       req.Amount,
+		OccurredOn:   od,
+		Notes:        req.Notes,
+	})
+	if errors.Is(err, store.ErrNotFound) {
+		writeErr(w, 404, "not found")
+		return
+	}
+	if err != nil {
+		writeErr(w, 500, err.Error())
+		return
+	}
+	writeJSON(w, 201, f)
 }

@@ -40,6 +40,16 @@ export type Weight = {
 
 export type HistoryPoint = { value: number; recorded_at: string };
 
+export type InvestmentFlow = {
+  id: number;
+  investment_id: string;
+  kind: "contribution" | "withdrawal";
+  amount: number;
+  occurred_on?: string | null;
+  notes?: string | null;
+  created_at: string;
+};
+
 export type User = {
   id: string;
   email: string;
@@ -131,6 +141,11 @@ export const api = {
     req<Investment>(`/api/investments/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
   remove: (id: string) => req<void>(`/api/investments/${id}`, { method: "DELETE" }),
   history: (id: string) => req<HistoryPoint[]>(`/api/investments/${id}/history`),
+  flows: (id: string) => req<InvestmentFlow[]>(`/api/investments/${id}/flows`),
+  addFlow: (
+    id: string,
+    body: { kind: "contribution" | "withdrawal"; amount: number; occurred_on?: string | null; notes?: string | null }
+  ) => req<InvestmentFlow>(`/api/investments/${id}/flows`, { method: "POST", body: JSON.stringify(body) }),
   summary: () => req<Summary>("/api/summary"),
 };
 
