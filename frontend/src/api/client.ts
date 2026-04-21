@@ -220,6 +220,7 @@ export const TYPES = [
   "STOCK",
   "INSURANCE",
   "FD",
+  "LIQUID",
   "CRYPTO",
   "REAL_ESTATE",
   "BOND",

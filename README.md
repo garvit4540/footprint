@@ -256,7 +256,7 @@ Full list. Defaults shown in brackets. All consumed in `backend/cmd/api/main.go`
 - Onboarding: public `/signup`. New users are `member` with no tags → they only see `public` + `member` posts until admin grants tags.
 
 ### 2. Investments (admin-private)
-- Types: `MUTUAL_FUND | STOCK | INSURANCE | FD | CRYPTO | REAL_ESTATE | BOND | OTHER`.
+- Types: `MUTUAL_FUND | STOCK | INSURANCE | FD | LIQUID | CRYPTO | REAL_ESTATE | BOND | OTHER`.
 - Every `current_value` change appends to `valuation_history` inside the update transaction.
 - Dashboard chart uses `summary.series` (per-investment point lists) and computes the **Portfolio total** with LOCF (last-observation-carried-forward), so days where one investment didn't move don't drop out of the sum. Currency tabs avoid summing INR + USD.
 - Per-investment detail: chart, high/low/first-tracked tiles, full value-updates table with delta and cumulative-since-purchase.
